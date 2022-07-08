@@ -62,7 +62,7 @@ The application has a few settings that can be changed:
 
 1. `Switch playback device only on process start`: Determines if the audio should switch when a program starts instead of when a program takes the foreground focus. The default is false (switch on foreground focus).
 2. `Switch to fallback playback device when no mapping found`: Determines if the audio should automatically be switched to a default playback device if no mapping is found for the current process. For example if you alt-tab out a game, this can change the audio back to a fallback device until you switch to the game.
-3. `Change the fallback device when no mapping is found`: Allows you to update which playback device is the fallback device.
+3. `Fallback playback device`: Allows you to update which playback device is the fallback device.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
