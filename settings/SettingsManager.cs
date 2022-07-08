@@ -86,7 +86,7 @@ namespace AudioSwitcher.settings
                 case Setting.SwitchOnProcessStart:
                     return "Switch playback device only on process start";
                 case Setting.FallbackDevice:
-                    return "Change fallback device when no mapping is found";
+                    return "Fallback playback device";
                 case Setting.UseFallbackDevice:
                     return "Switch to fallback playback device when no mapping is found";
             }
