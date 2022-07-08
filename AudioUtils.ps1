@@ -1,4 +1,9 @@
-﻿Import-Module -Name AudioDeviceCmdlets
+﻿$ModuleCheck = Get-Module -ListAvailable -Name AudioDeviceCmdlets
+if (-Not $ModuleCheck) {
+    Install-Module -Name AudioDeviceCmdlets
+} 
+
+Import-Module -Name AudioDeviceCmdlets
 
 function Get-PlaybackDevices {
     Get-AudioDevice -List | Where-Object {$_.Type -eq "Playback"}
