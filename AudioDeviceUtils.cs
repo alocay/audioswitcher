@@ -1,7 +1,9 @@
 ﻿using log4net;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Management.Automation;
+using System.Reflection;
 
 namespace AudioSwitcher
 {
@@ -9,13 +11,15 @@ namespace AudioSwitcher
     {
         private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
+        private static string powershellScript = string.Empty;
+
         public static List<PlaybackDevice> GetPlaybackDevices()
         {
             try
             {
                 using (var powershell = PowerShell.Create())
                 {
-                    powershell.AddScript(@"Import-Module .\AudioUtils.ps1").Invoke();
+                    powershell.AddScript(GetPowershellScript()).Invoke();
                     powershell.AddCommand("Get-PlaybackDevices");
 
                     var devices = powershell.Invoke();
@@ -49,7 +53,7 @@ namespace AudioSwitcher
             {
                 using (var powershell = PowerShell.Create())
                 {
-                    powershell.AddScript(@"Import-Module .\AudioUtils.ps1").Invoke();
+                    powershell.AddScript(GetPowershellScript()).Invoke();
                     powershell.AddCommand("Set-PlaybackDevice").AddParameter("DeviceId", deviceId).Invoke();
 
                     if (powershell.HadErrors)
@@ -66,6 +70,25 @@ namespace AudioSwitcher
             {
                 log.Error("Error setting playback device", ex);
             }
+        }
+
+        private static string GetPowershellScript()
+        {
+            if (!string.IsNullOrWhiteSpace(powershellScript))
+            {
+                return powershellScript;
+            }
+
+            var assembly = Assembly.GetExecutingAssembly();
+            var resourceName = "AudioSwitcher.AudioUtils.ps1";
+
+            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+            using (StreamReader reader = new StreamReader(stream))
+            {
+                powershellScript = reader.ReadToEnd();
+            }
+
+            return powershellScript;
         }
     }
 }

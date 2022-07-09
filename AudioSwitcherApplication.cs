@@ -67,6 +67,7 @@ namespace AudioSwitcher
                 {
                     if (action.IsSameAction(userChoice))
                     {
+                        Clear();
                         action.Run(AudioMapping);
                     }
                 }
@@ -81,6 +82,12 @@ namespace AudioSwitcher
                 .AddChoices(actions.Select(a => a.ActionTitle));
 
             return AnsiConsole.Prompt(prompt);
+        }
+
+        private static void Clear()
+        {
+            Console.Clear();
+            RenderTitle();
         }
     }
 }

@@ -11,27 +11,28 @@ namespace AudioSwitcher.settings
     public class SettingsManager
     {
         private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
-        private readonly string settingsFile = "settings.json";
+        private const string AppSettingsDirectory = "AudioSwitcher";
+        private const string SettingsFile = "settings.json";
 
         public AudioSwitcherSettings Settings { get; set; }
 
         public event EventHandler SettingChanged;
 
+        public SettingsManager()
+        {
+            if (!Directory.Exists(GetSettingsDirectory()))
+            {
+                Directory.CreateDirectory(GetSettingsDirectory());
+            }
+        }
+
         public void SaveSettings()
         {
             try
             {
-                using (IsolatedStorageFile isoStore = IsolatedStorageFile.GetStore(IsolatedStorageScope.User | IsolatedStorageScope.Domain | IsolatedStorageScope.Assembly, null, null))
-                {
-                    var stream = isoStore.CreateFile(settingsFile);
-
-                    using (StreamWriter file = new StreamWriter(stream))
-                    {
-                        JsonSerializer serializer = new JsonSerializer();
-                        serializer.Serialize(file, Settings);
-                    }
-                }
+                JsonSerializer serializer = new JsonSerializer();
+                string json = JsonConvert.SerializeObject(Settings);
+                File.WriteAllText(GetSettingsPath(), json);
             }
             catch (Exception ex)
             {
@@ -43,23 +44,15 @@ namespace AudioSwitcher.settings
         {
             try
             {
-                using (IsolatedStorageFile isoStore = IsolatedStorageFile.GetStore(IsolatedStorageScope.User | IsolatedStorageScope.Domain | IsolatedStorageScope.Assembly, null, null))
+                if (!File.Exists(GetSettingsPath()))
                 {
-                    if (!isoStore.FileExists(settingsFile))
-                    {
-                        Settings = new AudioSwitcherSettings();
-                        return Settings;
-                    }
-
-                    var stream = isoStore.OpenFile(settingsFile, FileMode.Open);
-
-                    using (StreamReader file = new StreamReader(stream))
-                    {
-                        string json = file.ReadToEnd();
-                        Settings = JsonConvert.DeserializeObject<AudioSwitcherSettings>(json);
-                        return Settings;
-                    }
+                    Settings = new AudioSwitcherSettings();
+                    return Settings;
                 }
+
+                string json = File.ReadAllText(GetSettingsPath());
+                Settings = JsonConvert.DeserializeObject<AudioSwitcherSettings>(json);
+                return Settings;
             }
             catch (Exception ex)
             {
@@ -156,6 +149,21 @@ namespace AudioSwitcher.settings
             Settings.UseFallbackDevice = option == UseFallbackDeviceOptions.UseFallback;
             SettingChanged?.Invoke(this, EventArgs.Empty);
             SaveSettings();
+        }
+
+        private string GetSettingsDirectory()
+        {
+            var systemPath = System.Environment.
+                             GetFolderPath(
+                                 Environment.SpecialFolder.CommonApplicationData
+                             );
+
+            return Path.Combine(systemPath, AppSettingsDirectory);
+        }
+
+        private string GetSettingsPath()
+        {
+            return Path.Combine(GetSettingsDirectory(), SettingsFile);
         }
     }
 }
